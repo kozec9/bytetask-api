@@ -30,9 +30,19 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 
 	createdBook, err := h.TaskService.CreateTask(task)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create book"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create task"})
 		return
 	}
 
 	c.JSON(http.StatusCreated, createdBook)
+}
+
+func (h *TaskHandler) GetTasks(c *gin.Context) {
+	tasks, err := h.TaskService.GetTasks()
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch tasks"})
+		return
+	}
+
+	c.JSON(http.StatusOK, tasks)
 }
