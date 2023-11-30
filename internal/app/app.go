@@ -52,7 +52,7 @@ func connectMongo(mongoURL string, mongoName string) *mongo.Database {
 }
 
 func NewApp() *App {
-	cfg, err := configs.LoadConfig("../")
+	cfg, err := configs.LoadConfig(".")
 	if err != nil {
 		log.Fatal("Could not load environment variables", err)
 	}
