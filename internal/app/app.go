@@ -271,6 +271,11 @@ func NewApp() *App {
 			}
 			tasks = append(tasks, task)
 		}
+
+		if tasks == nil {
+			tasks = []models.TaskResponse{}
+		}
+
 		c.JSON(http.StatusOK, tasks)
 	})
 
