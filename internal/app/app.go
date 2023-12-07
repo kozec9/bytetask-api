@@ -273,7 +273,8 @@ func NewApp() *App {
 		}
 
 		if tasks == nil {
-			tasks = []models.TaskResponse{}
+			c.JSON(http.StatusOK, make([]models.TaskResponse, 0))
+			return
 		}
 
 		c.JSON(http.StatusOK, tasks)
