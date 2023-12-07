@@ -13,9 +13,6 @@ import (
 
 type TaskRepository interface {
 	CreateTask(task models.Task) (*models.TaskResponse, error)
-	UpdateTask(id string, task models.Task) (*models.TaskResponse, error)
-	DeleteTask(id string) (*models.TaskResponse, error)
-	GetTask(id string) (*models.TaskResponse, error)
 	GetTasks() (*[]models.TaskResponse, error)
 	// Add other CRUD repository methods as needed
 }
@@ -58,89 +55,6 @@ func (r *taskRepository) CreateTask(task models.Task) (*models.TaskResponse, err
 	}
 
 	return &createdTask, nil
-}
-
-// Update update a task in the database.
-func (r *taskRepository) UpdateTask(id string, task models.Task) (*models.TaskResponse, error) {
-	objectID, err := primitive.ObjectIDFromHex(id)
-
-	if err != nil {
-		return nil, errors.New("invalid ObjectID format")
-	}
-
-	// Update a context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	filter := bson.M{"_id": objectID}
-
-	// Update the book into the MongoDB collection
-	result, err := r.Collection.UpdateOne(ctx, filter, bson.M{"$set": task})
-	if err != nil {
-		return nil, err
-	}
-
-	// Check if any document was modified
-	if result.ModifiedCount == 0 {
-		return nil, errors.New("no document found for the given ID")
-	}
-
-	// Query the database to get the updated book object
-	var updatedBookFromDB models.TaskResponse
-	err = r.Collection.FindOne(ctx, filter).Decode(&updatedBookFromDB)
-	if err != nil {
-		return nil, err
-	}
-
-	return &updatedBookFromDB, nil
-}
-
-// Delete delete a task in the database.
-func (r *taskRepository) DeleteTask(id string) (*models.TaskResponse, error) {
-	objectID, err := primitive.ObjectIDFromHex(id)
-
-	if err != nil {
-		return nil, errors.New("invalid ObjectID format")
-	}
-	// Delete a context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	filter := bson.M{"_id": objectID}
-
-	var deletedTask models.TaskResponse
-	result := r.Collection.FindOneAndDelete(ctx, filter).Decode(&deletedTask)
-	if result == mongo.ErrNoDocuments {
-		return nil, errors.New("no document found for the given ID")
-	} else if result != nil {
-		return nil, result
-	}
-
-	return &deletedTask, nil
-}
-
-// Delete delete a task in the database.
-func (r *taskRepository) GetTask(id string) (*models.TaskResponse, error) {
-	objectID, err := primitive.ObjectIDFromHex(id)
-
-	if err != nil {
-		return nil, errors.New("invalid ObjectID format")
-	}
-	// Delete a context with timeout
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	filter := bson.M{"_id": objectID}
-
-	var task models.TaskResponse
-	result := r.Collection.FindOne(ctx, filter).Decode(&task)
-	if result == mongo.ErrNoDocuments {
-		return nil, errors.New("no document found for the given ID")
-	} else if result != nil {
-		return nil, result
-	}
-
-	return &task, nil
 }
 
 func (r *taskRepository) GetTasks() (*[]models.TaskResponse, error) {

@@ -7,9 +7,6 @@ import (
 
 type TaskService interface {
 	CreateTask(task models.Task) (*models.TaskResponse, error)
-	UpdateTask(id string, task models.Task) (*models.TaskResponse, error)
-	DeleteTask(id string) (*models.TaskResponse, error)
-	GetTask(id string) (*models.TaskResponse, error)
 	GetTasks() (*[]models.TaskResponse, error)
 	// Add other CRUD service methods as needed
 }
@@ -26,20 +23,6 @@ func NewTaskService(taskRepository repositories.TaskRepository) TaskService {
 
 func (s *taskService) CreateTask(task models.Task) (*models.TaskResponse, error) {
 	return s.TaskRepository.CreateTask(task)
-}
-
-func (s *taskService) UpdateTask(id string, task models.Task) (*models.TaskResponse, error) {
-	return s.TaskRepository.UpdateTask(id, task)
-}
-
-// DeleteTask implements TaskService.
-func (s *taskService) DeleteTask(id string) (*models.TaskResponse, error) {
-	return s.TaskRepository.DeleteTask(id)
-}
-
-// GetTask implements TaskService.
-func (s *taskService) GetTask(id string) (*models.TaskResponse, error) {
-	return s.TaskRepository.GetTask(id)
 }
 
 func (s *taskService) GetTasks() (*[]models.TaskResponse, error) {

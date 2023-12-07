@@ -11,7 +11,7 @@ import (
 	"fmt"
 	"log"
 
-	// "github.com/gin-contrib/cors"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -30,46 +30,39 @@ var (
 	mutex     sync.RWMutex
 )
 
-func connectMongo(mongoURL string, mongoName string) (*mongo.Database, error) {
+func connectMongo(mongoURL string, mongoName string) *mongo.Database {
 
 	clientOptions := options.Client().ApplyURI(mongoURL)
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
 		log.Fatal(err)
-		return nil, err
 	}
 
 	// Check the connection
 	err = client.Ping(context.Background(), nil)
 	if err != nil {
 		log.Fatal(err)
-		return nil, err
 	}
 
-	fmt.Println("Connected to MongoDBsssssss!")
-	fmt.Println(mongoName)
+	fmt.Println("Connected to MongoDB!")
 
 	db := client.Database(mongoName)
 
-	return db, nil
+	return db
 }
 
 func NewApp() *App {
-	cfg, err := configs.LoadConfig(".")
+	cfg, err := configs.LoadConfig("../")
 	if err != nil {
 		log.Fatal("Could not load environment variables", err)
 	}
 
 	r := gin.Default()
 
-	fmt.Println("PORT: ", cfg.PORT)
-
-	// config := cors.DefaultConfig()
-	// config.AllowOrigins = []string{"http://localhost:" + cfg.PORT} // Replace with the origin of your frontend application
-	// config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
-	// r.Use(cors.New(config))
-
-	r.Use(corsMiddleware())
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:" + cfg.PORT} // Replace with the origin of your frontend application
+	config.AllowMethods = []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"}
+	r.Use(cors.New(config))
 
 	// // Initialize MongoDB
 	// clientOptions := options.Client().ApplyURI(cfg.MONGOURL)
@@ -167,8 +160,7 @@ func NewApp() *App {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
 
-		var task *models.Task
-
+		var task models.Task
 		if err := c.ShouldBindJSON(&task); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 			return
@@ -192,13 +184,7 @@ func NewApp() *App {
 		urlString := fmt.Sprintf("%v", url)
 		nmaeString := fmt.Sprintf("%v", nmae)
 
-		db, err := connectMongo(urlString, nmaeString)
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
+		db := connectMongo(urlString, nmaeString)
 		collectionTask := db.Collection("task")
 
 		// Insert the book into the MongoDB collection
@@ -246,13 +232,7 @@ func NewApp() *App {
 		urlString := fmt.Sprintf("%v", url)
 		nmaeString := fmt.Sprintf("%v", nmae)
 
-		db, err := connectMongo(urlString, nmaeString)
-
-		if err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-			return
-		}
-
+		db := connectMongo(urlString, nmaeString)
 		collectionTask := db.Collection("task")
 
 		// Find all tasks in the MongoDB collection
@@ -275,21 +255,6 @@ func NewApp() *App {
 	})
 
 	return app
-}
-
-func corsMiddleware() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(204)
-			return
-		}
-
-		c.Next()
-	}
 }
 
 func (app *App) Run(port string) {

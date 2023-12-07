@@ -37,48 +37,6 @@ func (h *TaskHandler) CreateTask(c *gin.Context) {
 	c.JSON(http.StatusCreated, createdBook)
 }
 
-func (h *TaskHandler) UpdateTask(c *gin.Context) {
-	id := c.Param("id")
-
-	var task models.Task
-	if err := c.ShouldBindJSON(&task); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		return
-	}
-
-	updatedBook, err := h.TaskService.UpdateTask(id, task)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update task"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, updatedBook)
-}
-
-func (h *TaskHandler) DeleteTask(c *gin.Context) {
-	id := c.Param("id")
-
-	deletedTask, err := h.TaskService.DeleteTask(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete task"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, deletedTask)
-}
-
-func (h *TaskHandler) GetTask(c *gin.Context) {
-	id := c.Param("id")
-
-	task, err := h.TaskService.GetTask(id)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get task"})
-		return
-	}
-
-	c.JSON(http.StatusCreated, task)
-}
-
 func (h *TaskHandler) GetTasks(c *gin.Context) {
 	tasks, err := h.TaskService.GetTasks()
 	if err != nil {
